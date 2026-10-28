@@ -1,5 +1,5 @@
 import { renderCard } from "../card";
-import { json } from "../index";
+import { json } from "../http";
 import { cleanText } from "../text";
 
 function tokenMatches(provided: string | null, expected: string): boolean {
