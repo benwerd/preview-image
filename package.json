@@ -10,7 +10,8 @@
     "deploy": "wrangler deploy",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "postinstall": "node scripts/extract-hb-wasm.mjs"
   },
   "repository": {
     "type": "git",
