@@ -1,0 +1,14 @@
+name = "werd-og-image"
+main = "src/index.ts"
+compatibility_date = "2026-10-01"
+
+[vars]
+GHOST_ADMIN_API_URL = "https://werd-io.ghost.io"
+
+[observability]
+enabled = true
+
+[[rules]]
+type = "Data"
+globs = ["**/*.woff"]
+fallthrough = true
