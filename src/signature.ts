@@ -2,12 +2,6 @@ const TOLERANCE_MS = 5 * 60_000;
 const HEADER = /^sha256=([0-9a-f]{64}),\s*t=(\d+)$/;
 const encoder = new TextEncoder();
 
-// Workers-only extension. The default tsconfig pulls in lib.dom, whose SubtleCrypto
-// shadows the one from @cloudflare/workers-types and omits timingSafeEqual.
-type WorkersSubtleCrypto = SubtleCrypto & {
-  timingSafeEqual(a: ArrayBuffer | ArrayBufferView, b: ArrayBuffer | ArrayBufferView): boolean;
-};
-
 export async function signGhostWebhook(rawBody: string, secret: string, timestampMs: number): Promise<string> {
   const digest = await hmacSha256(secret, rawBody + String(timestampMs));
   return `sha256=${toHex(digest)}, t=${timestampMs}`;
@@ -29,7 +23,7 @@ export async function verifyGhostSignature(
   const expected = new Uint8Array(await hmacSha256(secret, rawBody + ts));
   const actual = fromHex(digestHex);
   if (actual.byteLength !== expected.byteLength) return false;
-  return (crypto.subtle as WorkersSubtleCrypto).timingSafeEqual(actual, expected);
+  return crypto.subtle.timingSafeEqual(actual, expected);
 }
 
 async function hmacSha256(secret: string, message: string): Promise<ArrayBuffer> {
