@@ -24,13 +24,13 @@ describe("fitCard", () => {
   });
   it("fits a single 600-character word by clamping at the floor", async () => {
     const f = await fitCard({ title: "x".repeat(600), subtitle: "s" });
-    expect(f.titleSize).toBe(44); expect(f.titleClamp).toBeGreaterThanOrEqual(1);
+    expect(f.titleSize).toBe(44); expect(f.titleClamp).toBe(6);
   });
 });
 
 describe("renderCard", () => {
   it("produces a 1200×630 PNG for every approved case", async () => {
-    for (const input of [typical, { title: "Short", subtitle: "" }, { title: "No label here", label: "" }]) {
+    for (const input of [typical, { title: "Short", subtitle: "" }, { title: "No label here", label: "" }, { title: "x".repeat(600), subtitle: "s" }]) {
       const png = await renderCard(input);
       const v = new DataView(png.buffer, png.byteOffset);
       expect(v.getUint32(16)).toBe(1200); expect(v.getUint32(20)).toBe(630);
