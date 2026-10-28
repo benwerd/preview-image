@@ -54,6 +54,8 @@ npx wrangler secret put GHOST_WEBHOOK_SECRET
 npx wrangler secret put PREVIEW_TOKEN
 ```
 
+If you run `wrangler secret put` before the first `wrangler deploy`, Wrangler asks whether to create the Worker. Answer yes.
+
 For local development, copy the example file and fill it in. `.dev.vars` is git-ignored.
 
 ```bash
@@ -92,7 +94,7 @@ With both webhooks created and the secrets set, start the log stream in one term
 npx wrangler tail
 ```
 
-In Ghost, open a published post that has no feature image, clear its Facebook and Twitter images under the post's Meta data and social settings if they are set, and save. Within seconds the log shows one `/hook` request answered 202 with `mode: "create"`, followed by a line containing the new image URL. The post's Facebook and Twitter card previews then show the card, and the media library contains `og-<id>.png` once.
+In Ghost, open a published post that has no feature image, clear its Facebook and Twitter images under the post's Meta data and social settings if they are set, and save. Within seconds the log shows one `/hook` request answered 202 with `mode: "create"`, followed by the job's log line containing the new image URL, which ends in `og-<id>.png`. Ghost admin has no browsable media library, so confirm the result from that URL: open the post's Meta data and social settings and check that both the Facebook and Twitter card image fields show it.
 
 ## Forcing a refresh
 
@@ -112,7 +114,7 @@ Look in the logs instead. Live:
 npx wrangler tail
 ```
 
-Workers Logs in the Cloudflare dashboard (open the `werd-og-image` Worker and look for its Logs tab) keeps a retained window. Each request and each background job writes one JSON line, for example `{"route":"hook","id":"...","decision":{...}}` and `{"job":"processPost","id":"...","image":"..."}`. Failures log `error`, `status` and `body` from Ghost; skips log a `skipped` reason.
+Workers Logs in the Cloudflare dashboard (open the `werd-og-image` Worker and look for its Logs tab) keeps a retained window. `/hook` requests and background jobs each write one JSON line (`/preview` and unknown routes do not log), for example `{"route":"hook","id":"...","decision":{...}}` and `{"job":"processPost","id":"...","image":"..."}`. Failures log `error`, `status` and `body` from Ghost; skips log a `skipped` reason.
 
 ## Tweaking the design
 

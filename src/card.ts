@@ -47,7 +47,8 @@ export async function fitCard(input: CardInput): Promise<Fit> {
     await layoutToSvg(cardElement(input, probe, false), (n) => {
       if (n.key === "title" || n.key === "subtitle") h[n.key] = n.height;
     });
-    const titleHeight = h.title ?? 0;
+    if (h.title === undefined) throw new Error("title node not measured");
+    const titleHeight = h.title;
     const titleLines = Math.round(titleHeight / (titleSize * LAYOUT.TITLE_LH));
     const subHeight = hasSub ? LAYOUT.GAP + Math.min(h.subtitle ?? 0, LAYOUT.SUB_LINES * subtitleSize * LAYOUT.SUB_LH) : 0;
     const fits = titleSize === LAYOUT.TITLE_BIG ? titleLines <= (hasSub ? 2 : 3) : titleHeight + subHeight <= LAYOUT.AVAIL_H;

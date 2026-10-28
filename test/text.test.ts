@@ -5,6 +5,9 @@ describe("cleanText", () => {
   it("decodes entities Ghost emits", () => {
     expect(cleanText("Tom &amp; Jerry&#8217;s &quot;day&quot; &ndash; now")).toBe('Tom & Jerry’s "day" – now');
   });
+  it("decodes hex numeric entities with either case of x", () => {
+    expect(cleanText("&#x41;&#X41;")).toBe("AA");
+  });
   it("strips tags and collapses whitespace", () => {
     expect(cleanText("  <em>Solar</em> is\n\n  cheap ")).toBe("Solar is cheap");
   });

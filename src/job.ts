@@ -45,7 +45,7 @@ export async function processPost(id: string, env: Env, fetchImpl: FetchLike = f
     log(id, { image });
   } catch (err) {
     if (err instanceof GhostError) {
-      console.error(JSON.stringify({ job: "processPost", id, error: err.message, status: err.status, body: err.body }));
+      console.error(JSON.stringify({ job: "processPost", id, error: err.message, status: err.status, body: err.body.slice(0, 2000) }));
     } else {
       console.error(JSON.stringify({ job: "processPost", id, error: err instanceof Error ? err.message : String(err) }));
     }

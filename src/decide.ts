@@ -59,7 +59,7 @@ function normalise(current: Record<string, unknown>, id: string): GhostPost {
 export function decide(payload: unknown): { post?: GhostPost; decision: Decision } {
   const post = isRecord(payload) && isRecord(payload.post) ? payload.post : undefined;
   const current = post?.current;
-  if (!post || !isRecord(current) || typeof current.id !== "string") {
+  if (!post || !isRecord(current) || typeof current.id !== "string" || !current.id) {
     return { decision: { mode: "skip", reason: "no post" } };
   }
 
@@ -70,7 +70,10 @@ export function decide(payload: unknown): { post?: GhostPost; decision: Decision
   if (p.feature_image) return { post: p, decision: { mode: "skip", reason: "has feature image" } };
   if (!p.og_image) return { post: p, decision: { mode: "create" } };
 
-  const changed = CONTENT_KEYS.some((key) => Object.hasOwn(previous, key));
+  // A key counts as changed only when its value differs, not merely because Ghost sent it in `previous`.
+  const changed = CONTENT_KEYS.some(
+    (key) => Object.hasOwn(previous, key) && JSON.stringify(previous[key]) !== JSON.stringify(current[key]),
+  );
   if (isOurImage(p.og_image, p.id) && changed) return { post: p, decision: { mode: "refresh" } };
   return { post: p, decision: { mode: "skip", reason: "og_image set" } };
 }

@@ -35,7 +35,7 @@ function isSupportedCodePoint(cp: number): boolean {
 }
 
 function decodeEntities(input: string): string {
-  return input.replace(/&(#x[0-9a-fA-F]+|#[0-9]+|[a-zA-Z]+);/g, (match, body: string) => {
+  return input.replace(/&(#[xX][0-9a-fA-F]+|#[0-9]+|[a-zA-Z]+);/g, (match, body: string) => {
     if (body.startsWith("#")) {
       const codePoint = body[1] === "x" || body[1] === "X"
         ? parseInt(body.slice(2), 16)

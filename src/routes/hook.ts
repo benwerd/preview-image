@@ -1,6 +1,6 @@
 import { decide } from "../decide";
 import { json } from "../http";
-import { verifyGhostSignature } from "../signature";
+import { explainGhostSignature } from "../signature";
 
 export type HookDeps = { processPost: (id: string, env: Env) => Promise<void> };
 
@@ -16,8 +16,11 @@ export async function handleHook(
     console.error("GHOST_WEBHOOK_SECRET not set");
     return json({ error: "unauthorized" }, 401);
   }
-  const valid = await verifyGhostSignature(raw, request.headers.get("x-ghost-signature"), env.GHOST_WEBHOOK_SECRET);
-  if (!valid) return json({ error: "unauthorized" }, 401);
+  const result = await explainGhostSignature(raw, request.headers.get("x-ghost-signature"), env.GHOST_WEBHOOK_SECRET);
+  if (!result.ok) {
+    console.warn(JSON.stringify({ route: "hook", rejected: "signature", reason: result.reason }));
+    return json({ error: "unauthorized" }, 401);
+  }
 
   let payload: unknown;
   try {

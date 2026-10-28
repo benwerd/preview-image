@@ -57,7 +57,7 @@ export function ghostClient(
       Authorization: `Ghost ${await adminJwt(key!)}`,
     };
     if (contentType) headers["Content-Type"] = contentType;
-    return fetchImpl(`${base}${path}`, { method, headers, body });
+    return fetchImpl(`${base}${path}`, { method, headers, body, signal: AbortSignal.timeout(10_000) });
   }
 
   async function fail(method: string, path: string, res: Response): Promise<never> {

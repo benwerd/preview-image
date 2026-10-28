@@ -4,7 +4,7 @@
 
 **Goal:** A Cloudflare Worker that, when Ghost publishes or edits a post with no feature image, renders a branded 1200×630 PNG card from the title, excerpt and primary tag, uploads it to Ghost, and sets it as the post's `og_image` and `twitter_image`.
 
-**Architecture:** One Worker with two routes. `POST /hook` verifies Ghost's HMAC signature over the raw body, decides from the webhook payload alone (create / refresh / skip), answers within milliseconds, and does the real work in `ctx.waitUntil()`. The background job re-fetches the post from the Ghost Admin API, lays the card out with satori (standalone WASM build), rasterises with resvg-wasm, uploads the PNG, and PUTs the two image fields. `GET /preview` renders a card from query parameters for design checks.
+**Architecture:** One Worker with two routes. `POST /hook` verifies Ghost's HMAC signature over the raw body, decides from the webhook payload alone (create / refresh / skip), answers within milliseconds, and does the real work in `ctx.waitUntil()`. The background job re-fetches the post from the Ghost Admin API, lays the card out with satori 0.12.2 with yoga-wasm-web, rasterises with resvg-wasm, uploads the PNG, and PUTs the two image fields. `GET /preview` renders a card from query parameters for design checks.
 
 **Tech Stack:** Cloudflare Workers (Paid), Wrangler 4, TypeScript, `satori@0.12.2` pinned (`satori/wasm` + `yoga-wasm-web@0.3.3`; newer satori releases embed HarfBuzz WASM as base64 and compile it at runtime, which Workers forbid), `@resvg/resvg-wasm@2.6`, fonts from `@fontsource/inter` and `@fontsource/merriweather` (Latin WOFF subsets, committed into `src/fonts`), Vitest 4.1+ with `@cloudflare/vitest-plugin` (tests run inside workerd).
 

@@ -38,5 +38,12 @@ export async function layoutToSvg(
 
 export async function svgToPng(svg: string): Promise<Uint8Array> {
   await ensureEngines();
-  return new Resvg(svg, { fitTo: { mode: "width", value: 1200 } }).render().asPng();
+  const r = new Resvg(svg, { fitTo: { mode: "width", value: 1200 } });
+  const img = r.render();
+  try {
+    return img.asPng();
+  } finally {
+    img.free();
+    r.free();
+  }
 }

@@ -13,6 +13,13 @@ describe("decide", () => {
     expect(decide(wrap({ ...base, og_image: "https://werd.io/content/images/2026/10/og-p1.png" }, { title: "Old" })).decision).toEqual({ mode: "refresh" }));
   it("refreshes our image (with Ghost's numeric suffix) when the excerpt changed", () =>
     expect(decide(wrap({ ...base, og_image: "https://werd.io/content/images/2026/10/og-p1-1.png" }, { custom_excerpt: "Old" })).decision).toEqual({ mode: "refresh" }));
+  it("refreshes when previous.title differs from current.title", () =>
+    expect(decide(wrap({ ...base, title: "New", og_image: "https://werd.io/content/images/2026/10/og-p1.png" }, { title: "Old" })).decision).toEqual({ mode: "refresh" }));
+  it("skips when previous.tags equals current.tags", () => {
+    const tags = [{ id: "t1", name: "Tech", slug: "tech" }];
+    expect(decide(wrap({ ...base, tags, og_image: "https://werd.io/content/images/2026/10/og-p1.png" }, { tags: [{ id: "t1", name: "Tech", slug: "tech" }] })).decision)
+      .toEqual({ mode: "skip", reason: "og_image set" });
+  });
   it("skips the edit the Worker itself makes", () =>
     expect(decide(wrap({ ...base, og_image: "https://werd.io/content/images/2026/10/og-p1.png" }, { og_image: null, twitter_image: null, updated_at: "x" })).decision.mode).toBe("skip"));
   it("never touches a hand-set image", () =>
@@ -25,6 +32,8 @@ describe("decide with malformed payloads", () => {
   it("does not throw for other non-string og_image values", () => {
     for (const og of [true, {}, []]) expect(() => decide(wrap({ ...base, og_image: og }, { title: "Old" }))).not.toThrow();
   });
+  it("skips when post.current.id is an empty string", () =>
+    expect(decide(wrap({ ...base, id: "" })).decision).toEqual({ mode: "skip", reason: "no post" }));
   it("skips when post.current is a string", () =>
     expect(decide({ post: { current: "nope" } }).decision).toEqual({ mode: "skip", reason: "no post" }));
   it("skips for non-object payloads", () => {
