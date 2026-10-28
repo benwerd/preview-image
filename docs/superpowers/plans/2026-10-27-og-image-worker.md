@@ -6,7 +6,7 @@
 
 **Architecture:** One Worker with two routes. `POST /hook` verifies Ghost's HMAC signature over the raw body, decides from the webhook payload alone (create / refresh / skip), answers within milliseconds, and does the real work in `ctx.waitUntil()`. The background job re-fetches the post from the Ghost Admin API, lays the card out with satori (standalone WASM build), rasterises with resvg-wasm, uploads the PNG, and PUTs the two image fields. `GET /preview` renders a card from query parameters for design checks.
 
-**Tech Stack:** Cloudflare Workers (Paid), Wrangler 4, TypeScript, `satori@0.63` (`satori/standalone` + `satori/layout.wasm`), `@resvg/resvg-wasm@2.6`, fonts from `@fontsource/inter` and `@fontsource/merriweather` (Latin WOFF subsets, committed into `src/fonts`), Vitest 4.1+ with `@cloudflare/vitest-plugin` (tests run inside workerd).
+**Tech Stack:** Cloudflare Workers (Paid), Wrangler 4, TypeScript, `satori@0.12.2` pinned (`satori/wasm` + `yoga-wasm-web@0.3.3`; newer satori releases embed HarfBuzz WASM as base64 and compile it at runtime, which Workers forbid), `@resvg/resvg-wasm@2.6`, fonts from `@fontsource/inter` and `@fontsource/merriweather` (Latin WOFF subsets, committed into `src/fonts`), Vitest 4.1+ with `@cloudflare/vitest-plugin` (tests run inside workerd).
 
 **Spec:** `docs/superpowers/specs/2026-10-27-og-image-design.md`
 
@@ -14,7 +14,7 @@
 
 - Platform: Cloudflare Workers Paid plan; ES module Worker; `compatibility_date` ≥ `2026-10-01`.
 - Ghost gives the webhook receiver 2 seconds and delivers each event once. Nothing on the `POST /hook` path may instantiate WASM, load fonts, or call Ghost before the response is returned. WASM instantiation never happens at module top level (Workers cap startup at 400 ms CPU).
-- WebAssembly on Workers: `.wasm` files are imported as modules (`WebAssembly.Module`); `WebAssembly.instantiate` from bytes and `instantiateStreaming` are unavailable. Hence `satori/standalone` + `import layoutWasm from "satori/layout.wasm"`, and `import resvgWasm from "@resvg/resvg-wasm/index_bg.wasm"`.
+- WebAssembly on Workers: `.wasm` files are imported as modules (`WebAssembly.Module`); `WebAssembly.instantiate` from bytes and `instantiateStreaming` are unavailable. Hence `satori/wasm` + `init(await initYoga(yogaWasm))` with `import yogaWasm from "yoga-wasm-web/dist/yoga.wasm"`, and `import resvgWasm from "@resvg/resvg-wasm/index_bg.wasm"`. (Controller ruling during Task 2; see the SDD ledger.)
 - Secrets (`GHOST_ADMIN_API_KEY`, `GHOST_WEBHOOK_SECRET`, `PREVIEW_TOKEN`) exist only in `wrangler secret` and the git-ignored `.dev.vars`. Nothing secret in any committed file.
 - `GHOST_ADMIN_API_URL` = `https://werd-io.ghost.io` (a `[vars]` entry). Admin API base = `${GHOST_ADMIN_API_URL}/ghost/api/admin/`, header `Accept-Version: v5.0`, `Authorization: Ghost <jwt>`.
 - Card: 1200×630, white background, masthead 110 px `#286c93`, horizontal padding 90 px, body padding 64 px top / 56 px bottom, text `#15171a`, excerpt `#4a4f57`. Exact type sizes in Task 5.
