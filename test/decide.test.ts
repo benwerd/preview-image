@@ -19,10 +19,26 @@ describe("decide", () => {
     expect(decide(wrap({ ...base, og_image: "https://werd.io/content/images/2026/10/photo.png" }, { title: "Old" })).decision.mode).toBe("skip"));
 });
 
+describe("decide with malformed payloads", () => {
+  it("treats a non-string og_image as set but not ours", () =>
+    expect(decide(wrap({ ...base, og_image: 123 })).decision).toEqual({ mode: "skip", reason: "og_image set" }));
+  it("does not throw for other non-string og_image values", () => {
+    for (const og of [true, {}, []]) expect(() => decide(wrap({ ...base, og_image: og }, { title: "Old" }))).not.toThrow();
+  });
+  it("skips when post.current is a string", () =>
+    expect(decide({ post: { current: "nope" } }).decision).toEqual({ mode: "skip", reason: "no post" }));
+  it("skips for non-object payloads", () => {
+    for (const p of [null, undefined, 5, "x", [], { post: null }]) expect(decide(p).decision).toEqual({ mode: "skip", reason: "no post" });
+  });
+  it("creates for a fresh post when previous is null", () =>
+    expect(decide({ post: { current: base, previous: null } }).decision).toEqual({ mode: "create" }));
+});
+
 describe("isOurImage", () => {
   it("matches by basename prefix only", () => {
     expect(isOurImage("https://a/b/og-p1.png", "p1")).toBe(true);
     expect(isOurImage("https://a/og-p1/photo.png", "p1")).toBe(false);
     expect(isOurImage(null, "p1")).toBe(false);
+    expect(isOurImage(123 as unknown as string, "p1")).toBe(false);
   });
 });

@@ -22,7 +22,7 @@ function basename(path: string): string {
 }
 
 export function isOurImage(url: string | null | undefined, postId: string): boolean {
-  if (!url) return false;
+  if (typeof url !== "string" || !url) return false;
   let path: string;
   try {
     path = new URL(url).pathname;
@@ -32,6 +32,30 @@ export function isOurImage(url: string | null | undefined, postId: string): bool
   return basename(path).startsWith(`og-${postId}`);
 }
 
+function str(value: unknown): string {
+  return typeof value === "string" ? value : "";
+}
+
+// Any truthy non-string image value is kept as a (non-empty) string so it still counts as "set".
+function image(value: unknown): string | null {
+  if (typeof value === "string") return value || null;
+  return value ? String(value) : null;
+}
+
+function normalise(current: Record<string, unknown>, id: string): GhostPost {
+  const tag = current.primary_tag;
+  return {
+    id,
+    status: str(current.status),
+    feature_image: image(current.feature_image),
+    og_image: image(current.og_image),
+    title: str(current.title),
+    custom_excerpt: typeof current.custom_excerpt === "string" ? current.custom_excerpt : null,
+    updated_at: str(current.updated_at),
+    primary_tag: isRecord(tag) && typeof tag.name === "string" ? { name: tag.name } : null,
+  };
+}
+
 export function decide(payload: unknown): { post?: GhostPost; decision: Decision } {
   const post = isRecord(payload) && isRecord(payload.post) ? payload.post : undefined;
   const current = post?.current;
@@ -39,7 +63,7 @@ export function decide(payload: unknown): { post?: GhostPost; decision: Decision
     return { decision: { mode: "skip", reason: "no post" } };
   }
 
-  const p = current as unknown as GhostPost;
+  const p = normalise(current, current.id);
   const previous = isRecord(post.previous) ? post.previous : {};
 
   if (p.status !== "published") return { post: p, decision: { mode: "skip", reason: "not published" } };
