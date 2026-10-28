@@ -21,11 +21,11 @@ export function cardElement(input: CardInput, fit: Fit, clamp: boolean): SatoriE
     ],
   );
   const title = div(
-    { fontFamily: "Inter", fontWeight: 800, fontSize: fit.titleSize, lineHeight: LAYOUT.TITLE_LH, letterSpacing: "-0.02em", color: "#15171a", wordBreak: "break-word", ...(clamp ? { lineClamp: fit.titleClamp } : {}) },
+    { fontFamily: "Inter", fontWeight: 800, fontSize: fit.titleSize, lineHeight: LAYOUT.TITLE_LH, letterSpacing: "-0.02em", color: "#15171a", wordBreak: "break-word", ...(clamp ? { display: "block", lineClamp: fit.titleClamp } : {}) },
     input.title, "title",
   );
   const subtitle = input.subtitle
-    ? [div({ fontFamily: "Merriweather", fontWeight: 400, fontSize: fit.subtitleSize, lineHeight: LAYOUT.SUB_LH, color: "#4a4f57", marginTop: LAYOUT.GAP, ...(clamp ? { lineClamp: LAYOUT.SUB_LINES } : {}) }, input.subtitle, "subtitle")]
+    ? [div({ fontFamily: "Merriweather", fontWeight: 400, fontSize: fit.subtitleSize, lineHeight: LAYOUT.SUB_LH, color: "#4a4f57", marginTop: LAYOUT.GAP, ...(clamp ? { display: "block", lineClamp: LAYOUT.SUB_LINES } : {}) }, input.subtitle, "subtitle")]
     : [];
   const body = div(
     { flexDirection: "column", flexGrow: 1, padding: `${LAYOUT.BODY_PAD_TOP}px ${LAYOUT.PAD_X}px ${LAYOUT.BODY_PAD_BOTTOM}px`, justifyContent: "center" },
