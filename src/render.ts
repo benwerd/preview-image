@@ -1,7 +1,7 @@
-import "./wasm-shim"; // must precede satori/standalone
-import satori, { init as initSatori } from "satori/standalone";
+import satori, { init as initSatori } from "satori/wasm";
+import initYoga from "yoga-wasm-web";
 import { initWasm, Resvg } from "@resvg/resvg-wasm";
-import layoutWasm from "satori/layout.wasm";
+import yogaWasm from "yoga-wasm-web/dist/yoga.wasm";
 import resvgWasm from "@resvg/resvg-wasm/index_bg.wasm";
 import inter700 from "./fonts/inter-latin-700-normal.woff";
 import inter800 from "./fonts/inter-latin-800-normal.woff";
@@ -17,9 +17,9 @@ export const FONTS: { name: string; weight: 400 | 700 | 800; data: ArrayBuffer }
 
 let enginesReady: Promise<void> | undefined;
 
-/** Instantiates the satori layout engine and resvg once; later calls reuse the same promise. */
+/** Instantiates the satori layout engine (yoga) and resvg once; later calls reuse the same promise. */
 export function ensureEngines(): Promise<void> {
-  enginesReady ??= Promise.all([initSatori(layoutWasm), initWasm(resvgWasm)]).then(() => undefined);
+  enginesReady ??= Promise.all([initYoga(yogaWasm).then(initSatori), initWasm(resvgWasm)]).then(() => undefined);
   return enginesReady;
 }
 
@@ -28,7 +28,7 @@ export async function layoutToSvg(
   onNode?: (n: { key?: string | number; height: number; width: number }) => void,
 ): Promise<string> {
   await ensureEngines();
-  return satori(el as Parameters<typeof satori>[0], {
+  return satori(el as unknown as Parameters<typeof satori>[0], {
     width: 1200,
     height: 630,
     fonts: FONTS.map((f) => ({ ...f, style: "normal" as const })),

@@ -10,8 +10,7 @@
     "deploy": "wrangler deploy",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit",
-    "postinstall": "node scripts/extract-hb-wasm.mjs"
+    "typecheck": "tsc --noEmit"
   },
   "repository": {
     "type": "git",
@@ -27,7 +26,8 @@
   "homepage": "https://github.com/benwerd/preview-image#readme",
   "dependencies": {
     "@resvg/resvg-wasm": "^2.6.2",
-    "satori": "^0.63.2"
+    "satori": "0.12.2",
+    "yoga-wasm-web": "0.3.3"
   },
   "devDependencies": {
     "@cloudflare/vitest-plugin": "^1.4.9",
